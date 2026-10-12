@@ -1,0 +1,29 @@
+<!doctype html><html lang="zh"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>抖音解析</title>
+<style>body{font:16px -apple-system,sans-serif;max-width:640px;margin:auto;padding:16px;background:#111;color:#eee}
+textarea,input,button{width:100%;box-sizing:border-box;margin:6px 0;padding:10px;border-radius:10px;border:1px solid #444;background:#222;color:#eee;font-size:16px}
+button{background:#fe2c55;border:0;font-weight:600}.card{background:#1c1c1e;border-radius:12px;padding:12px;margin-top:12px}
+img{max-width:100%;border-radius:10px}a{color:#4ea1ff;word-break:break-all}.stat{display:flex;gap:12px;flex-wrap:wrap;color:#aaa}
+.av{width:40px;height:40px;border-radius:50%;vertical-align:middle;margin-right:8px}</style>
+<h2>抖音解析</h2>
+<textarea id="u" rows="3" placeholder="粘贴抖音分享链接或整段分享文本"></textarea>
+<input id="m" placeholder="合集ID或合集链接（可选，用来取播放量）">
+<input id="t" placeholder="访问密码（服务器设了 DY_TOKEN 才需要）">
+<button onclick="go()">解析</button><div id="out"></div>
+<script>
+const API='https://dy-web-xraeercqms.cn-hangzhou.fcapp.run';
+t.value=localStorage.t||'';
+async function go(){try{return await go2()}catch(e){out.innerHTML=`<div class=card>❌ 请求失败：${e}</div>`}}
+async function go2(){out.innerHTML='<div class=card>解析中…</div>';localStorage.t=t.value;
+const q=new URLSearchParams({u:u.value,mix_id:m.value,token:t.value});
+const r=await (await fetch(API+'/parse?'+q)).json();
+if(r.code!==200){out.innerHTML=`<div class=card>❌ ${r.msg}</div>`;return}
+const d=r.data;let h=`<div class=card><img class=av src="${d.author_avatar}"><b>${d.author}</b> @${d.author_id||''}
+<p>${d.title.replace(/</g,'&lt;')}</p><div class=stat><span>❤️ ${d.digg_count}</span><span>💬 ${d.comment_count}</span>
+<span>⭐ ${d.collect_count}</span><span>↗️ ${d.share_count}</span><span>▶️ ${d.play_count_text}</span></div>
+<p style="color:#888">${d.create_time} · ${d.work_type}${d.duration_s?' · '+d.duration_s+'秒':''}${d.mix_episode?' · 合集第'+d.mix_episode+'集':''}${r.cached?' · 缓存':''}</p>
+<img src="${d.cover_url}"></div>`;
+if(d.video_list.length)h+='<div class=card><b>下载（约1小时内有效）</b>'+d.video_list.map(v=>`<p><a href="${v.url}" target=_blank>${v.level}</a></p>`).join('')+'</div>';
+if(d.images.length)h+='<div class=card><b>图片（无水印）</b>'+d.images.map((i,n)=>`<p><a href="${i.url}" target=_blank><img src="${i.url}"></a>${i.live_video?`<a href="${i.live_video}">实况视频</a>`:''}</p>`).join('')+'</div>';
+out.innerHTML=h}
+</script></html>
